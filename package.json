@@ -1,0 +1,25 @@
+{
+  "name": "frontend-boilerplate",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "run-script-os",
+    "start:win32": "browser-sync start --server --files '**/*.css, **/*.html, **/*.js, !node_modules/**/*' --directory --port 7777 --browser Chrome",
+    "start:darwin:linux": "browser-sync start --server --files '**/*.css, **/*.html, **/*.js, !node_modules/**/*' --directory --port 7777 --browser 'Google Chrome'"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.24.5",
+    "run-script-os": "^1.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aleks-frontend/mole-game.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aleks-frontend/mole-game/issues"
+  },
+  "homepage": "https://github.com/aleks-frontend/mole-game#readme",
+  "description": ""
+}
