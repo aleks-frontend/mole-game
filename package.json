@@ -21,5 +21,8 @@
     "url": "https://github.com/aleks-frontend/mole-game/issues"
   },
   "homepage": "https://github.com/aleks-frontend/mole-game#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "npm": "^6.8.0"
+  }
 }
