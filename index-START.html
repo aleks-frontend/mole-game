@@ -6,13 +6,21 @@
   <link href='https://fonts.googleapis.com/css?family=Amatic+SC:400,700' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="style.css">
   <style>
+    :root {
+        --yellow: #ffc600;
+    }
+
     .red {
       background-color: red;
     }
 
     .bonked {
         opacity: 0.3;
-        transform: rotate(180deg);
+        transform: rotate(180deg) scale(0.5);
+    }
+
+    .mole:hover {
+        cursor: crosshair;
     }
 
     .table {
@@ -45,6 +53,25 @@
     .table__row.active {
         font-weight: bold;
         background: tomato;
+        color: #fff;
+    }
+
+    @-webkit-keyframes blinkingText {
+        0% {
+            background: tomato;
+            color: #fff;
+        }
+
+        100% {
+            background: white;
+            color: #000;
+        }
+    }
+
+    .table__row.active:first-child {
+        animation-name: blinkingText;
+        animation-duration: 0.5s;
+        animation-iteration-count: infinite;
     }
 
     .table__cell:first-child {
@@ -81,12 +108,14 @@
         justify-content: center;
         align-items: center;
         transition: all 0.3s;
+        pointer-events: none;
     }
 
     .popup {
         width: 300px;
         padding: 30px;
         background: #ffc600;
+        pointer-events: auto;
     }
 
     .inputs {
@@ -109,6 +138,10 @@
         color: #ffc600;
     }
 
+    .submitBtn:hover {
+        cursor: pointer;
+    }
+
     .faded {
         opacity: 0;
     }
@@ -116,22 +149,122 @@
     .hidden {
         display: none;
     }
+
+    .bonusMole {
+        position: fixed;
+        width: 300px;
+        transition: 0.3s all ease-in-out;
+        z-index: 2;
+        opacity: 0;
+    }
+
+    .bonusMole--bottom {
+        bottom: 0;
+        left: 40%;
+        transform: translateY(100%);
+    }
+
+    .bonusMole--top {
+        top: 0;
+        left: 40%;
+        transform: translateY(-100%) rotate(180deg);
+    }
+
+    .bonusMole--left {
+        left: 0;
+        top: 40%;
+        transform: translateX(-100%) rotate(90deg);
+    }
+
+    .bonusMole--right {
+        right: 0;
+        top: 40%;
+        transform: translateX(100%) rotate(-90deg);
+    }
+
+    .bonusMole--peek {
+        opacity: 1;
+    }
+
+    .bonusMole--right.bonusMole--peek {
+        transform: translateX(40px) rotate(-90deg);
+    }
+
+    .bonusMole--left.bonusMole--peek {
+        transform: translateX(-40px) rotate(90deg);
+    }
+
+    .bonusMole--top.bonusMole--peek {
+        transform: translateY(0) rotate(180deg);
+    }
+
+    .bonusMole--bottom.bonusMole--peek {
+        transform: translateY(0);
+    }
+
+    .bonusMole--dead {
+        opacity: 0;
+    }
+
+    .game {
+        position: relative;
+    }
+
+    audio {
+        display: none;
+    }
+
+    .score {
+        transition: 0.3s ease-in-out all;
+        display: inline-block;
+    }
+
+    @-webkit-keyframes bounceIn {
+      0% {
+        transform: scale(1);
+        color: black;
+      }
+
+      25% {
+        transform: scale(2);
+        color: red;
+      }
+
+      50% {
+        transform: scale(0.7);
+        color: black;
+      }
+
+      75% {
+        transform: scale(2);
+        color: red;
+      }
+
+      100% {
+        transform: scale(1);
+        color: black;
+      }
+    }
+
+    .score.bonus {
+        animation: bounceIn 2s linear;
+    }
+
+    .endMessage {
+        margin: 30px 0;
+        font-size: 6rem;
+        color: var(--yellow);
+        margin: 1rem 0;
+    }
   </style>
 </head>
 <body>
-    <div class="blood"></div>
-  <div class="popup__overlay">
-    <div class="popup">
-        <div class="inputs">
-            <label for="playerName">Your name: </label>
-            <input type="text" id="playerName" class="playerName" placeholder="Your name here.." />
-        </div>
-        <div>
-            <input type="submit" class="submitBtn" value="Start" />
-        </div>
-    </div><!-- end popup -->
-    <div class="table"></div>
-  </div><!-- end popup__overlay -->
+  <audio src="kick.wav" class="bonkSound"></audio>
+  <audio src="clap.wav" class="clapSound"></audio>
+  <audio src="applause.wav" class="applauseSound"></audio>
+  <audio src="boo.wav" class="booSound"></audio>
+
+  <div class="blood"></div>
   <h1>Whack-a-mole! <span class="score">0</span></h1>
 
   <div class="game">
@@ -154,16 +287,36 @@
       <div class="mole"></div>
     </div>
   </div>
-
+  <img src="bonus-mole.png" class="bonusMole" />
+  <div class="popup__overlay">
+    <div class="popup">
+        <div class="inputs">
+            <label for="playerName">Your name: </label>
+            <input type="text" id="playerName" class="playerName" placeholder="Your name here.." />
+        </div>
+        <div>
+            <input type="submit" class="submitBtn" value="Start" />
+        </div>
+    </div><!-- end popup -->
+    <div class="endMessage"></div>
+    <div class="table"></div>
+  </div><!-- end popup__overlay -->
 <script>
   /* eslint-disable no-console */
 const blood = document.querySelector('.blood');
 const holes = document.querySelectorAll('.hole');
+const bonusMole = document.querySelector('.bonusMole');
 const scoreBoard = document.querySelector('.score');
+const endMessageDiv = document.querySelector('.endMessage');
 const popupOverlay = document.querySelector('.popup__overlay');
 const table = document.querySelector('.table');
-let gameDuration = 10000;
+const bonkSound = document.querySelector('.bonkSound');
+const clapSound = document.querySelector('.clapSound');
+const applauseSound = document.querySelector('.applauseSound');
+const booSound = document.querySelector('.booSound');
+let gameDuration = 15000;
 let score;
+let endMessage = '';
 const results = JSON.parse(localStorage.getItem('results')) || [];
 let playerName = (results.length > 0) ? results[results.length - 1].player : 'Player One';
 const newPlayerForm = {
@@ -192,6 +345,26 @@ function randomHole(holes) {
     return hole;
 }
 
+function bonus() {
+    const lucky = (Math.random() > 0.5);
+    bonusMole.className = 'bonusMole';
+    if  ( !lucky ) return;
+
+    const positions = [ 'bonusMole--top', 'bonusMole--right', 'bonusMole--bottom', 'bonusMole--left' ];
+    const start = Math.floor(Math.random() * gameDuration);
+    const bonusPosition = positions[Math.round(Math.random() * 3)];
+
+    console.log(bonusPosition);
+
+    bonusMole.classList.add(bonusPosition);
+    setTimeout(() => {
+        bonusMole.classList.add('bonusMole--peek');
+        setTimeout(() => {
+            bonusMole.classList.remove('bonusMole--peek');
+        }, randomTime(500, 1500));
+    }, start);
+}
+
 function peep() {
     const hole = randomHole(holes);
     const time = randomTime(500, 2000);
@@ -207,6 +380,7 @@ function peep() {
 }
 
 function updateResults() {
+    applauseSound.currentTime = 0;
     const result = {
         player: playerName,
         result: parseInt(scoreBoard.innerText),
@@ -215,6 +389,9 @@ function updateResults() {
 
     const currentId = result.id;
     results.push(result);
+
+    const loserText = `Sorry <strong>${result.player}</strong>, you are not in top 10 :(`;
+    const winnerText = `Congratulations <strong>${result.player}</strong>, you are in top 10!`;
 
     const sorted = results.sort((a, b) => (a.result < b.result) ? 1 : -1);
     const minimized = sorted.filter((result,i) => ( i < 10 ) ? true : false);
@@ -228,10 +405,19 @@ function updateResults() {
     }).join('');
     document.querySelector('.table').innerHTML = tableContent;
     localStorage.setItem('results', JSON.stringify(results));
+
+    const top10 = minimized.some(mini => mini.id == currentId );
+
+    top10 ? applauseSound.play() : booSound.play();
+    endMessage = top10 ? winnerText: loserText;
+    if ( minimized[0].id == currentId ) endMessage = `Fuck yeah! You are the best ${result.player}!!!`;
+    endMessageDiv.innerHTML = endMessage;
 }
 
 function startGame() {
+    document.querySelectorAll('audio').forEach(audio => audio.pause());
     popupOverlay.classList.add('faded');
+    bonus();
     setTimeout(() => {
         popupOverlay.classList.add('hidden');
     }, 300);
@@ -256,6 +442,7 @@ function startGame() {
 }
 
 function bonk(e) {
+    if ( timeUp ) return;
     if ( !e.isTrusted ) return; // checking if it's a real click
     if ( !this.parentNode.classList.contains('up') ) return; // checking for a double click
 
@@ -269,6 +456,9 @@ function bonk(e) {
     blood.classList.add('show');
 
     this.classList.add('bonked');
+    clapSound.currentTime = 0;
+    bonkSound.currentTime = 0;
+    bonkSound.play();
 
     setTimeout(() => {
         blood.classList.remove('show');
@@ -280,6 +470,17 @@ function bonk(e) {
 }
 
 moles.forEach(mole => mole.addEventListener('click', bonk));
+bonusMole.addEventListener('click', function() {
+    if ( timeUp ) return;
+    this.classList.remove('bonusMole--peek');
+    this.classList.add('bonusMole--dead');
+    score += 3;
+    scoreBoard.textContent = score;
+    scoreBoard.classList.add('bonus');
+    bonkSound.currentTime = 0;
+    clapSound.currentTime = 0;
+    clapSound.play();
+});
 newPlayerForm.button.addEventListener('click', (e) => {
     playerName = document.querySelector('.playerName').value || 'Player One';
     startGame();
