@@ -75,6 +75,12 @@
     }
 
     .table__cell:first-child {
+        width: 30px;
+        text-align: left;
+        padding-left: 5px;
+    }
+
+    .table__cell:nth-child(2) {
       flex: 1;
       text-align: left;
     }
@@ -158,28 +164,59 @@
         opacity: 0;
     }
 
+    .bonusMole:hover {
+        cursor: crosshair;
+    }
+
     .bonusMole--bottom {
         bottom: 0;
-        left: 40%;
         transform: translateY(100%);
     }
 
     .bonusMole--top {
         top: 0;
-        left: 40%;
         transform: translateY(-100%) rotate(180deg);
+    }
+
+    .bonusMole--bottom.middle,
+    .bonusMole--top.middle {
+        left: 40%;
+    }
+
+    .bonusMole--bottom.start,
+    .bonusMole--top.start {
+        left: 5%;
+    }
+
+    .bonusMole--bottom.end,
+    .bonusMole--top.end {
+        left: auto;
+        right: 5%;
     }
 
     .bonusMole--left {
         left: 0;
-        top: 40%;
         transform: translateX(-100%) rotate(90deg);
     }
 
     .bonusMole--right {
         right: 0;
-        top: 40%;
         transform: translateX(100%) rotate(-90deg);
+    }
+
+    .bonusMole--left.start,
+    .bonusMole--right.start {
+        top: 5%;
+    }
+
+    .bonusMole--left.end,
+    .bonusMole--right.end {
+        bottom: 5%;
+    }
+
+    .bonusMole--left.middle,
+    .bonusMole--right.middle {
+        bottom: 40%;
     }
 
     .bonusMole--peek {
@@ -250,11 +287,140 @@
         animation: bounceIn 2s linear;
     }
 
+    @-webkit-keyframes combo1 {
+        0% {
+            color: #000;
+            background: #f00;
+        }
+
+        100% {
+            color: #f00;
+            background: #000;
+        }
+    }
+
+    @-webkit-keyframes combo2 {
+        0% {
+            color: #000;
+            transform: scale(1);
+        }
+
+        50% {
+            color: #f00;
+            transform: scale(1.3);
+        }
+
+        100% {
+            color: #000;
+            transform: scale(1);
+        }
+    }
+
+    .score.combo1 {
+        animation: combo1 1s infinite;
+    }
+
+    .score.combo2 {
+        animation: combo2 1s infinite;
+    }
+
     .endMessage {
         margin: 30px 0;
         font-size: 6rem;
         color: var(--yellow);
         margin: 1rem 0;
+    }
+
+    .combo__container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 200px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+    }
+
+    .combo__label {
+      font-size: 2rem;
+      margin-right: 5px;
+    }
+
+    .combo {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0;
+      border: 1px solid #e3e3e3;
+      border-radius: 10px;
+    }
+
+    .combo::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      height: 30px;
+      width: 1px;
+      background: #fff;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .combo__bar {
+      width: 0;
+      height: 20px;
+      border-radius: 10px;
+      transition: 0.3s all ease-in-out;
+    }
+
+    .combo__bar--1 {
+      width: 16.6%;
+      background: yellow;
+    }
+
+    .combo__bar--2 {
+      width: 33%;
+      background: green;
+    }
+
+    .combo__bar--3 {
+      width: 50%;
+      background: green;
+    }
+
+    .combo__bar--4 {
+      width: 56.6%;
+      background: orange;
+    }
+
+    .combo__bar--5 {
+      width: 73.2%;
+      background: red;
+    }
+
+    @-webkit-keyframes comboBarGrow {
+      0% {
+        background: red;
+        transform: scale(1);
+      }
+
+      50% {
+        background: tomato;
+        transform: scale(1.2);
+      }
+
+      100% {
+        background: red;
+        transform: scale(1);
+      }
+    }
+
+    .combo__bar--6 {
+      width: 100%;
+      background: red;
+      animation: comboBarGrow 1s infinite;
     }
   </style>
 </head>
@@ -263,7 +429,13 @@
   <audio src="audio/clap.wav" class="clapSound"></audio>
   <audio src="audio/applause.wav" class="applauseSound"></audio>
   <audio src="audio/boo.wav" class="booSound"></audio>
-
+  <audio src="audio/combo-alert.wav" class="comboSound"></audio>
+  <div class="combo__container">
+    <div class="combo__label">Combo level: </div>
+    <div class="combo">
+      <div class="combo__bar"></div>
+    </div><!-- end combo -->
+  </div><!-- end combo__container -->
   <div class="blood"></div>
   <h1>Whack-a-mole! <span class="score">0</span></h1>
 
@@ -314,9 +486,11 @@ const bonkSound = document.querySelector('.bonkSound');
 const clapSound = document.querySelector('.clapSound');
 const applauseSound = document.querySelector('.applauseSound');
 const booSound = document.querySelector('.booSound');
+const comboSound = document.querySelector('.comboSound');
 let gameDuration = 15000;
 let score;
 let endMessage = '';
+let combo = 0;
 const results = JSON.parse(localStorage.getItem('results')) || [];
 let playerName = (results.length > 0) ? results[results.length - 1].player : 'Player One';
 const newPlayerForm = {
@@ -350,18 +524,24 @@ function bonus() {
     bonusMole.className = 'bonusMole';
     if  ( !lucky ) return;
 
-    const positions = [ 'bonusMole--top', 'bonusMole--right', 'bonusMole--bottom', 'bonusMole--left' ];
     const start = Math.floor(Math.random() * gameDuration);
-    const bonusPosition = positions[Math.round(Math.random() * 3)];
 
-    console.log(bonusPosition);
+    const positions = {
+        sides: [ 'top', 'right', 'bottom', 'left' ],
+        aligns: ['start', 'middle', 'end']
+    };
 
-    bonusMole.classList.add(bonusPosition);
+    const position = {
+        side: positions.sides[Math.round(Math.random() * 3)],
+        align: positions.aligns[Math.round(Math.random() * 2)]
+    };
+
+    bonusMole.classList.add(`bonusMole--${position.side}`, position.align);
     setTimeout(() => {
         bonusMole.classList.add('bonusMole--peek');
         setTimeout(() => {
             bonusMole.classList.remove('bonusMole--peek');
-        }, randomTime(500, 1500));
+        }, randomTime(800, 1500));
     }, start);
 }
 
@@ -395,9 +575,10 @@ function updateResults() {
 
     const sorted = results.sort((a, b) => (a.result < b.result) ? 1 : -1);
     const minimized = sorted.filter((result,i) => ( i < 10 ) ? true : false);
-    const tableContent = minimized.map(result => {
+    const tableContent = minimized.map((result, index) => {
         return `
         <div class="table__row ${currentId == result.id ? 'active' : ''}">
+            <div class="table__cell">${index + 1}</div>
             <div class="table__cell">${result.player}</div>
             <div class="table__cell">${result.result}</div>
         </div><!-- end table__row -->
@@ -409,6 +590,7 @@ function updateResults() {
     const top10 = minimized.some(mini => mini.id == currentId );
 
     top10 ? applauseSound.play() : booSound.play();
+
     endMessage = top10 ? winnerText: loserText;
     if ( minimized[0].id == currentId ) endMessage = `Fuck yeah! You are the best ${result.player}!!!`;
     endMessageDiv.innerHTML = endMessage;
@@ -417,6 +599,7 @@ function updateResults() {
 function startGame() {
     document.querySelectorAll('audio').forEach(audio => audio.pause());
     popupOverlay.classList.add('faded');
+    scoreBoard.className = 'score';
     bonus();
     setTimeout(() => {
         popupOverlay.classList.add('hidden');
@@ -435,16 +618,36 @@ function startGame() {
                 table.classList.add('fade');
             }, 500);
         }, 300);
-        const finalScore = score;
-        updateResults(finalScore);
-
+        updateResults();
+        // Stopping the combo sound
+        comboSound.pause();
+        comboSound.currentTime = 0;
     }, gameDuration);
+}
+
+function comboCounter(e) {
+    const moleCheck = e.target.classList.contains('mole');
+    const bonusMoleCheck = e.target.classList.contains('bonusMole');
+
+    if ( moleCheck || bonusMoleCheck ) {
+        combo++;
+        // Playing the combo sound
+        if ( combo == 4 ) comboSound.play();
+    } else {
+        combo = 0;
+        scoreBoard.className = 'score';
+        // Stopping the combo sound
+        comboSound.pause();
+        comboSound.currentTime = 0;
+    }
+
+    document.querySelector('.combo__bar').className = `combo__bar combo__bar--${ combo < 7 ? combo : '6' }`;
 }
 
 function bonk(e) {
     if ( timeUp ) return;
     if ( !e.isTrusted ) return; // checking if it's a real click
-    if ( !this.parentNode.classList.contains('up') ) return; // checking for a double click
+    // if ( !this.parentNode.classList.contains('up') ) return; // checking for a double click
 
     const bonkPosition = {
         top: e.pageY,
@@ -462,9 +665,21 @@ function bonk(e) {
 
     setTimeout(() => {
         blood.classList.remove('show');
+        this.classList.remove('bonked');
     }, 500);
 
-    score++;
+    if ( combo < 3 ) {
+        score++;
+        scoreBoard.className = 'score';
+    } else if ( combo >= 3 && combo < 6 ) {
+        score = score + 2;
+        scoreBoard.classList.add('combo1');
+    } else {
+        score = score + 3;
+        scoreBoard.classList.remove('combo1');
+        scoreBoard.classList.add('combo2');
+    }
+
     this.parentNode.classList.remove('up');
     scoreBoard.textContent = score;
 }
@@ -486,6 +701,8 @@ newPlayerForm.button.addEventListener('click', (e) => {
     startGame();
     e.preventDefault();
 });
+
+document.body.addEventListener('click', comboCounter);
 
 </script>
 </body>
