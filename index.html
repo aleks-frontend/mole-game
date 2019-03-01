@@ -10,6 +10,11 @@
         --yellow: #ffc600;
     }
 
+    h2 {
+      text-align: center;
+      font-size: 5rem;
+    }
+
     .red {
       background-color: red;
     }
@@ -422,6 +427,28 @@
       background: red;
       animation: comboBarGrow 1s infinite;
     }
+
+    .timeLeft {
+      position: relative;
+    }
+
+    .timeLeft::before {
+      content: '+'attr(data-added-seconds);
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      font-size: 80%;
+      font-weight: 700;
+      color: red;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .extra::before {
+      transform: scale(1.2);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -438,6 +465,7 @@
   </div><!-- end combo__container -->
   <div class="blood"></div>
   <h1>Whack-a-mole! <span class="score">0</span></h1>
+  <h2>Time left: <span class="timeLeft"></span></h2>
 
   <div class="game">
     <div class="hole hole1">

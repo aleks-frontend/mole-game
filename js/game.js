@@ -24,8 +24,60 @@ const newPlayerForm = {
 const moles = document.querySelectorAll('.mole');
 let lastHole;
 let timeUp = false;
+let gameTimer;
 
 newPlayerForm.text.value = playerName;
+
+function Timer(callback, finalCallback, time) {
+    this.setInterval(time);
+    this.callback = callback;
+    this.finalCallback = finalCallback;
+    this.timeAdded = 0;
+}
+
+Timer.prototype.setInterval = function(time) {
+    var self = this;
+    this.finished = false;
+    this.time = time;
+    this.timeFormated = time / 1000;
+    this.start = Date.now();
+    this.currentTime = 0;
+
+    this.interval = setInterval(function() {
+        self.currentTime = (Date.now() - self.start) - (Date.now() - self.start) % 1000;
+        document.querySelector('.timeLeft').classList.remove('extra');
+        if ( self.currentTime == time ) {
+            self.timeFormated--;
+            self.finished = true;
+            clearInterval(self.interval);
+            self.finalCallback(self.timeFormated);
+        }  else {
+            if ( self.timeAdded > 0 ) {
+                time = self.time - self.currentTime + self.timeAdded;
+                clearInterval(self.interval);
+                self.setInterval(time);
+                self.callback(time / 1000);
+                self.timeAdded = 0;
+                return;
+            }
+            self.timeFormated--;
+            self.callback(self.timeFormated);
+        }
+    }, 1000);
+};
+
+Timer.prototype.add = function(time) {
+    if (!this.finished) {
+        this.timeAdded = time;
+        document.querySelector('.timeLeft').classList.add('extra');
+        document.querySelector('.timeLeft').dataset.addedSeconds = time / 1000;
+    }
+};
+
+function injectTime(time) {
+    const timeLeft = document.querySelector('.timeLeft');
+    timeLeft.innerText = time;
+}
 
 function randomTime(min, max) {
     return Math.round(Math.random() * (max - min) + min);
@@ -132,7 +184,8 @@ function startGame() {
     timeUp = false;
     score = 0;
     peep();
-    setTimeout(() => {
+
+    gameTimer = new Timer(injectTime, function(time){
         timeUp = true;
         popupOverlay.classList.remove('hidden');
         table.classList.add('show');
@@ -142,11 +195,13 @@ function startGame() {
                 table.classList.add('fade');
             }, 500);
         }, 300);
+        injectTime(time);
         updateResults();
         // Stopping the combo sound
         comboSound.pause();
         comboSound.currentTime = 0;
     }, gameDuration);
+
 }
 
 function comboCounter(e) {
@@ -171,7 +226,6 @@ function comboCounter(e) {
 function bonk(e) {
     if ( timeUp ) return;
     if ( !e.isTrusted ) return; // checking if it's a real click
-    // if ( !this.parentNode.classList.contains('up') ) return; // checking for a double click
 
     const bonkPosition = {
         top: e.pageY,
@@ -202,6 +256,7 @@ function bonk(e) {
         score = score + 3;
         scoreBoard.classList.remove('combo1');
         scoreBoard.classList.add('combo2');
+        gameTimer.add(1000);
     }
 
     this.parentNode.classList.remove('up');
