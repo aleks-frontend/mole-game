@@ -15,6 +15,7 @@ let gameDuration = 15000;
 let score;
 let endMessage = '';
 let combo = 0;
+let gameOn = false;
 const results = JSON.parse(localStorage.getItem('results')) || [];
 let playerName = (results.length > 0) ? results[results.length - 1].player : 'Player One';
 const newPlayerForm = {
@@ -184,6 +185,7 @@ function startGame() {
     timeUp = false;
     score = 0;
     peep();
+    gameOn = true;
 
     gameTimer = new Timer(injectTime, function(time){
         timeUp = true;
@@ -200,6 +202,7 @@ function startGame() {
         // Stopping the combo sound
         comboSound.pause();
         comboSound.currentTime = 0;
+        gameOn = false;
     }, gameDuration);
 
 }
@@ -218,9 +221,32 @@ function comboCounter(e) {
         // Stopping the combo sound
         comboSound.pause();
         comboSound.currentTime = 0;
+        if ( gameOn ) addBulletHole(e);
     }
 
     document.querySelector('.combo__bar').className = `combo__bar combo__bar--${ combo < 7 ? combo : '6' }`;
+}
+
+function addBulletHole(e) {
+    const clickPosition = {
+        left: e.pageX,
+        top: e.pageY
+    };
+
+    const bulletHole = document.createElement('div');
+    bulletHole.classList.add('bulletHole');
+    document.body.appendChild(bulletHole);
+
+    bulletHole.classList.add('show');
+    bulletHole.style.left = clickPosition.left + 'px';
+    bulletHole.style.top = clickPosition.top + 'px';
+
+    setTimeout(() => {
+        bulletHole.classList.remove('show');
+        setTimeout(() => {
+            bulletHole.remove();
+        }, 300);
+    }, 500);
 }
 
 function bonk(e) {

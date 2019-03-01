@@ -94,16 +94,34 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 15px;
-        height: 15px;
+        width: 100px;
+        height: 141px;
         background: red;
-        border-radius: 50%;
         opacity: 0;
-        transition: opacity ease-in-out 0.3s;
+        background: url(img/splatter-1.png) no-repeat center;
+        transition: opacity ease-out 0.3s;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
     }
 
     .blood.show {
         opacity: 1;
+    }
+
+    .bulletHole {
+      position: absolute;
+      width: 59px;
+      height: 73px;
+      background: url(img/bullet-hole-1.png) no-repeat center;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: all ease-out 0.3s;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .bulletHole.show {
+      opacity: 1;
     }
 
     .popup__overlay {
