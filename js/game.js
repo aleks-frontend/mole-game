@@ -177,6 +177,9 @@ function updateResults() {
 
         if ( a.precision < b.precision ) return 1;
         if ( a.precision > b.precision ) return -1;
+
+        if ( a.player < b.player ) return -1;
+        if ( a.player > b.player ) return 1;
     });
 
     const minimized = sorted.filter((result,i) => ( i < 10 ) ? true : false);
