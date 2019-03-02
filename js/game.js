@@ -16,7 +16,24 @@ let score;
 let endMessage = '';
 let combo = 0;
 let gameOn = false;
-const results = JSON.parse(localStorage.getItem('results')) || [];
+let totalShots = 0;
+let totalHits = 0;
+const results = JSON.parse(localStorage.getItem('results')) || [{
+    player: 'Aco',
+    result: 40,
+    id: 0,
+    precision: 95
+}, {
+    player: 'Luka',
+    result: 39,
+    id: 1,
+    precision: 93
+}, {
+    player: 'Boki',
+    result: 45,
+    id: 2,
+    precision: 100
+}];
 let playerName = (results.length > 0) ? results[results.length - 1].player : 'Player One';
 const newPlayerForm = {
     text: document.querySelector('.playerName'),
@@ -141,8 +158,11 @@ function updateResults() {
     const result = {
         player: playerName,
         result: parseInt(scoreBoard.innerText),
-        id: results.length
+        id: results.length,
+        precision: Math.round(totalHits / totalShots * 100)
     };
+
+    console.log({totalShots, totalHits});
 
     const currentId = result.id;
     results.push(result);
@@ -150,14 +170,24 @@ function updateResults() {
     const loserText = `Sorry <strong>${result.player}</strong>, you are not in top 10 :(`;
     const winnerText = `Congratulations <strong>${result.player}</strong>, you are in top 10!`;
 
-    const sorted = results.sort((a, b) => (a.result < b.result) ? 1 : -1);
+    const sorted = results.sort((a, b) => {
+        if (a.result < b.result) {
+            return 1;
+        } else if ( a.result > b.result ) {
+            return -1;
+        } else {
+            ( a.precision < b.precision ) ? 1 : -1;
+        }
+    });
+
     const minimized = sorted.filter((result,i) => ( i < 10 ) ? true : false);
     const tableContent = minimized.map((result, index) => {
         return `
         <div class="table__row ${currentId == result.id ? 'active' : ''}">
             <div class="table__cell">${index + 1}</div>
             <div class="table__cell">${result.player}</div>
-            <div class="table__cell">${result.result}</div>
+            <div class="table__cell u-pr-20">${result.precision}%</div>
+            <div class="table__cell"><strong>${result.result}</strong></div>
         </div><!-- end table__row -->
         `;
     }).join('');
@@ -171,6 +201,9 @@ function updateResults() {
     endMessage = top10 ? winnerText: loserText;
     if ( minimized[0].id == currentId ) endMessage = `Fuck yeah! You are the best ${result.player}!!!`;
     endMessageDiv.innerHTML = endMessage;
+
+    totalShots = 0;
+    totalHits = 0;
 }
 
 function startGame() {
@@ -211,8 +244,10 @@ function comboCounter(e) {
     const moleCheck = e.target.classList.contains('mole');
     const bonusMoleCheck = e.target.classList.contains('bonusMole');
 
+    if ( gameOn ) totalShots++;
     if ( moleCheck || bonusMoleCheck ) {
         combo++;
+        totalHits++;
         // Playing the combo sound
         if ( combo == 4 ) comboSound.play();
     } else {
