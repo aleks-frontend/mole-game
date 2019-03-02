@@ -18,6 +18,7 @@ let combo = 0;
 let gameOn = false;
 let totalShots = 0;
 let totalHits = 0;
+let bonkPosition;
 const results = JSON.parse(localStorage.getItem('results')) || [{
     player: 'Aco',
     result: 40,
@@ -284,11 +285,8 @@ function addBulletHole(e) {
     }, 500);
 }
 
-function bonk(e) {
-    if ( timeUp ) return;
-    if ( !e.isTrusted ) return; // checking if it's a real click
-
-    const bonkPosition = {
+function bloodEffect(e) {
+    bonkPosition = {
         top: e.pageY,
         left: e.pageX
     };
@@ -297,13 +295,23 @@ function bonk(e) {
     blood.style.left = bonkPosition.left + 'px';
     blood.classList.add('show');
 
+    setTimeout(() => {
+        blood.classList.remove('show');
+    }, 500);
+}
+
+function bonk(e) {
+    if ( timeUp ) return;
+    if ( !e.isTrusted ) return; // checking if it's a real click
+
     this.classList.add('bonked');
     clapSound.currentTime = 0;
     bonkSound.currentTime = 0;
     bonkSound.play();
 
+    bloodEffect(e);
+
     setTimeout(() => {
-        blood.classList.remove('show');
         this.classList.remove('bonked');
     }, 500);
 
@@ -325,7 +333,7 @@ function bonk(e) {
 }
 
 moles.forEach(mole => mole.addEventListener('click', bonk));
-bonusMole.addEventListener('click', function() {
+bonusMole.addEventListener('click', function(e) {
     if ( timeUp ) return;
     this.classList.remove('bonusMole--peek');
     this.classList.add('bonusMole--dead');
@@ -335,6 +343,9 @@ bonusMole.addEventListener('click', function() {
     bonkSound.currentTime = 0;
     clapSound.currentTime = 0;
     clapSound.play();
+    bloodEffect(e);
+
+    this.classList.add('bonked');
 });
 newPlayerForm.button.addEventListener('click', (e) => {
     playerName = document.querySelector('.playerName').value || 'Player One';
