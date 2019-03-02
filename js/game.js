@@ -172,13 +172,11 @@ function updateResults() {
     const winnerText = `Congratulations <strong>${result.player}</strong>, you are in top 10!`;
 
     const sorted = results.sort((a, b) => {
-        if (a.result < b.result) {
-            return 1;
-        } else if ( a.result > b.result ) {
-            return -1;
-        } else {
-            ( a.precision < b.precision ) ? 1 : -1;
-        }
+        if (a.result < b.result) return 1;
+        if (a.result > b.result) return -1;
+
+        if ( a.precision < b.precision ) return 1;
+        if ( a.precision > b.precision ) return -1;
     });
 
     const minimized = sorted.filter((result,i) => ( i < 10 ) ? true : false);
