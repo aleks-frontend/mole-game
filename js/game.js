@@ -333,8 +333,7 @@ function bonk(e) {
     scoreBoard.textContent = score;
 }
 
-moles.forEach(mole => mole.addEventListener('click', bonk));
-bonusMole.addEventListener('click', function(e) {
+function bonusBonk(e) {
     if ( timeUp ) return;
     this.classList.remove('bonusMole--peek');
     this.classList.add('bonusMole--dead');
@@ -347,7 +346,10 @@ bonusMole.addEventListener('click', function(e) {
     bloodEffect(e);
 
     this.classList.add('bonked');
-});
+}
+
+moles.forEach(mole => mole.addEventListener('click', bonk));
+bonusMole.addEventListener('click', bonusBonk);
 
 newPlayerForm.button.addEventListener('click', (e) => {
     playerName = document.querySelector('.playerName').value || 'Player One';
