@@ -215,12 +215,12 @@ function startGame() {
     bonus();
     setTimeout(() => {
         popupOverlay.classList.add('hidden');
+        gameOn = true;
     }, 300);
     scoreBoard.textContent = 0;
     timeUp = false;
     score = 0;
     peep();
-    gameOn = true;
 
     gameTimer = new Timer(injectTime, function(time){
         timeUp = true;
@@ -348,6 +348,7 @@ bonusMole.addEventListener('click', function(e) {
 
     this.classList.add('bonked');
 });
+
 newPlayerForm.button.addEventListener('click', (e) => {
     playerName = document.querySelector('.playerName').value || 'Player One';
     startGame();
