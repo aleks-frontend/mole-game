@@ -102,6 +102,7 @@
         transition: opacity ease-out 0.3s;
         transform: translate(-50%, -50%);
         z-index: 9999;
+        pointer-events: none;
     }
 
     .blood.show {
@@ -125,7 +126,7 @@
     }
 
     .popup__overlay {
-        position: absolute;
+        position: fixed;
         top: 0;
         bottom: 0;
         left: 0;
@@ -474,7 +475,8 @@
   </style>
 </head>
 <body>
-  <audio src="audio/kick.wav" class="bonkSound"></audio>
+  <audio src="audio/blood-smash.wav" class="bloodSound"></audio>
+  <audio src="audio/ricochet.wav" class="ricochetSound"></audio>
   <audio src="audio/clap.wav" class="clapSound"></audio>
   <audio src="audio/applause.wav" class="applauseSound"></audio>
   <audio src="audio/boo.wav" class="booSound"></audio>

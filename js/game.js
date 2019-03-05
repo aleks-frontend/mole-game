@@ -6,11 +6,13 @@ const scoreBoard = document.querySelector('.score');
 const endMessageDiv = document.querySelector('.endMessage');
 const popupOverlay = document.querySelector('.popup__overlay');
 const table = document.querySelector('.table');
-const bonkSound = document.querySelector('.bonkSound');
+const bloodSound = document.querySelector('.bloodSound');
+const ricochetSound = document.querySelector('.ricochetSound');
 const clapSound = document.querySelector('.clapSound');
 const applauseSound = document.querySelector('.applauseSound');
 const booSound = document.querySelector('.booSound');
 const comboSound = document.querySelector('.comboSound');
+comboSound.loop = true;
 let gameDuration = 15000;
 let score;
 let endMessage = '';
@@ -163,8 +165,6 @@ function updateResults() {
         precision: Math.round(totalHits / totalShots * 100)
     };
 
-    console.log({totalShots, totalHits});
-
     const currentId = result.id;
     results.push(result);
 
@@ -251,7 +251,7 @@ function comboCounter(e) {
         combo++;
         totalHits++;
         // Playing the combo sound
-        if ( combo == 4 ) comboSound.play();
+        if ( combo == 7 ) comboSound.play();
     } else {
         combo = 0;
         scoreBoard.className = 'score';
@@ -272,11 +272,14 @@ function addBulletHole(e) {
 
     const bulletHole = document.createElement('div');
     bulletHole.classList.add('bulletHole');
-    document.body.appendChild(bulletHole);
+    document.body.prepend(bulletHole);
 
     bulletHole.classList.add('show');
     bulletHole.style.left = clickPosition.left + 'px';
     bulletHole.style.top = clickPosition.top + 'px';
+
+    ricochetSound.currentTime = 0;
+    ricochetSound.play();
 
     setTimeout(() => {
         bulletHole.classList.remove('show');
@@ -307,8 +310,8 @@ function bonk(e) {
 
     this.classList.add('bonked');
     clapSound.currentTime = 0;
-    bonkSound.currentTime = 0;
-    bonkSound.play();
+    bloodSound.currentTime = 0;
+    bloodSound.play();
 
     bloodEffect(e);
 
@@ -340,7 +343,7 @@ function bonusBonk(e) {
     score += 3;
     scoreBoard.textContent = score;
     scoreBoard.classList.add('bonus');
-    bonkSound.currentTime = 0;
+    bloodSound.currentTime = 0;
     clapSound.currentTime = 0;
     clapSound.play();
     bloodEffect(e);
