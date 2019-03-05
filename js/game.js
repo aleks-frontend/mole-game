@@ -121,7 +121,7 @@ function randomHole(holes) {
 }
 
 function randomMole() {
-    const moleIndex = Math.floor(Math.random() * 3) + 1;
+    const moleIndex = Math.floor(Math.random() * 4) + 1;
 
     if ( lastMole === moleIndex ) {
         return randomMole();
@@ -167,7 +167,10 @@ function peep() {
     // hole.querySelector('.mole').classList.remove('bonked');
     hole.classList.add(`up-${moleIndex}`);
     setTimeout(() => {
-        if ( !hole.querySelector(`.mole--${moleIndex}`).classList.contains('bonked') ) killCombo();
+        const bonkedCheck = !hole.querySelector(`.mole--${moleIndex}`).classList.contains('bonked');
+        const allowedCheck = !hole.querySelector(`.mole--${moleIndex}`).classList.contains('notAllowed');
+
+        if ( bonkedCheck && allowedCheck ) killCombo();
 
         hole.classList.remove(`up-${moleIndex}`);
         if ( !timeUp ) {
@@ -256,6 +259,7 @@ function startGame() {
         }, 300);
         injectTime(time);
         updateResults();
+        scoreBoard.textContent = 0;
         // Stopping the combo sound
         comboSound.pause();
         comboSound.currentTime = 0;
@@ -348,6 +352,13 @@ function bonk(e) {
     bloodSound.play();
 
     bloodEffect(e);
+
+    if ( this.classList.contains('notAllowed') ) {
+        score -= 3;
+        this.parentNode.classList.remove('up');
+        scoreBoard.textContent = score;
+        return;
+    }
 
     if ( combo < 3 ) {
         score++;

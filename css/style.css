@@ -76,6 +76,15 @@ h1 {
   background: #bada55;
 }
 
+.mole--4 {
+  background: #000;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+}
+
 .hole.up-1 .mole--1 {
   top: 0;
 }
@@ -85,5 +94,9 @@ h1 {
 }
 
 .hole.up-3 .mole--3 {
+  top: 0;
+}
+
+.hole.up-4 .mole--4 {
   top: 0;
 }
