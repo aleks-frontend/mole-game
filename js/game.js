@@ -144,7 +144,9 @@ function bonus() {
 
 function peep() {
     const hole = randomHole(holes);
-    const time = randomTime(500, 2000);
+    const minTime = combo < 7 ? 500 : 400;
+    const maxTime = combo < 7 ? 2000 : 1000;
+    const time = randomTime(minTime, maxTime);
 
     hole.classList.add('up');
     hole.querySelector('.mole').classList.remove('bonked');
