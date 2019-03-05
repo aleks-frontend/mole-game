@@ -55,15 +55,35 @@ h1 {
 }
 
 .mole {
-  background: url('../img/mole.svg') bottom center no-repeat;
-  background-size: 60%;
+  background: url(../img/mole.svg) bottom center no-repeat;
+  background-size: 100%;
   position: absolute;
   top: 100%;
-  width: 100%;
+  width: 71%;
   height: 100%;
-  transition:all 0.4s;
+  transition: all 0.3s ease-in-out;
+  left: 50%;
+  transform: rotate(0deg) translateX(-50%) scale(1);
+  opacity: 1;
+  transform-origin: center;
 }
 
-.hole.up .mole {
+.mole--2 {
+  background: tomato;
+}
+
+.mole--3 {
+  background: #bada55;
+}
+
+.hole.up-1 .mole--1 {
+  top: 0;
+}
+
+.hole.up-2 .mole--2 {
+  top: 0;
+}
+
+.hole.up-3 .mole--3 {
   top: 0;
 }

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const blood = document.querySelector('.blood');
+// const blood = document.querySelector('.blood');
 const holes = document.querySelectorAll('.hole');
 const bonusMole = document.querySelector('.bonusMole');
 const scoreBoard = document.querySelector('.score');
@@ -12,6 +12,8 @@ const clapSound = document.querySelector('.clapSound');
 const applauseSound = document.querySelector('.applauseSound');
 const booSound = document.querySelector('.booSound');
 const comboSound = document.querySelector('.comboSound');
+const muteBtn = document.querySelector('.muteBtn');
+const comboBar = document.querySelector('.combo__bar');
 comboSound.loop = true;
 let gameDuration = 15000;
 let score;
@@ -37,13 +39,15 @@ const results = JSON.parse(localStorage.getItem('results')) || [{
     id: 2,
     precision: 100
 }];
-let playerName = (results.length > 0) ? results[results.length - 1].player : 'Player One';
+
+let playerName = (results.length > 3) ? results[results.length - 1].player : 'Player One';
 const newPlayerForm = {
     text: document.querySelector('.playerName'),
     button: document.querySelector('.submitBtn')
 };
 const moles = document.querySelectorAll('.mole');
 let lastHole;
+let lastMole;
 let timeUp = false;
 let gameTimer;
 
@@ -116,6 +120,17 @@ function randomHole(holes) {
     return hole;
 }
 
+function randomMole() {
+    const moleIndex = Math.floor(Math.random() * 3) + 1;
+
+    if ( lastMole === moleIndex ) {
+        return randomMole();
+    }
+
+    lastMole = moleIndex;
+    return moleIndex;
+}
+
 function bonus() {
     const lucky = (Math.random() > 0.5);
     bonusMole.className = 'bonusMole';
@@ -144,14 +159,17 @@ function bonus() {
 
 function peep() {
     const hole = randomHole(holes);
+    const moleIndex = randomMole();
     const minTime = combo < 7 ? 500 : 400;
     const maxTime = combo < 7 ? 2000 : 1000;
     const time = randomTime(minTime, maxTime);
 
-    hole.classList.add('up');
-    hole.querySelector('.mole').classList.remove('bonked');
+    // hole.querySelector('.mole').classList.remove('bonked');
+    hole.classList.add(`up-${moleIndex}`);
     setTimeout(() => {
-        hole.classList.remove('up');
+        if ( !hole.querySelector(`.mole--${moleIndex}`).classList.contains('bonked') ) killCombo();
+
+        hole.classList.remove(`up-${moleIndex}`);
         if ( !timeUp ) {
             peep();
         }
@@ -212,6 +230,8 @@ function updateResults() {
 
 function startGame() {
     document.querySelectorAll('audio').forEach(audio => audio.pause());
+    const bloodSplashes = document.querySelectorAll('.blood');
+    if ( bloodSplashes.length > 0 ) bloodSplashes.forEach(blood => blood.remove());
     popupOverlay.classList.add('faded');
     scoreBoard.className = 'score';
     bonus();
@@ -255,15 +275,20 @@ function comboCounter(e) {
         // Playing the combo sound
         if ( combo == 7 ) comboSound.play();
     } else {
-        combo = 0;
-        scoreBoard.className = 'score';
-        // Stopping the combo sound
-        comboSound.pause();
-        comboSound.currentTime = 0;
+        killCombo();
         if ( gameOn ) addBulletHole(e);
     }
 
-    document.querySelector('.combo__bar').className = `combo__bar combo__bar--${ combo < 7 ? combo : '6' }`;
+    comboBar.className = `combo__bar combo__bar--${ combo < 7 ? combo : '6' }`;
+}
+
+function killCombo() {
+    combo = 0;
+    scoreBoard.className = 'score';
+    comboBar.className = 'combo__bar';
+    // Stopping the combo sound
+    comboSound.pause();
+    comboSound.currentTime = 0;
 }
 
 function addBulletHole(e) {
@@ -292,6 +317,10 @@ function addBulletHole(e) {
 }
 
 function bloodEffect(e) {
+    const blood = document.createElement('div');
+    blood.classList.add('blood');
+    document.body.prepend(blood);
+
     bonkPosition = {
         top: e.pageY,
         left: e.pageX
@@ -302,7 +331,10 @@ function bloodEffect(e) {
     blood.classList.add('show');
 
     setTimeout(() => {
-        blood.classList.remove('show');
+        blood.classList.add('fadeOut');
+        setTimeout(() => {
+            blood.classList.remove('show', 'fadeOut');
+        }, 10000);
     }, 500);
 }
 
@@ -316,10 +348,6 @@ function bonk(e) {
     bloodSound.play();
 
     bloodEffect(e);
-
-    setTimeout(() => {
-        this.classList.remove('bonked');
-    }, 500);
 
     if ( combo < 3 ) {
         score++;
@@ -354,12 +382,25 @@ function bonusBonk(e) {
 }
 
 moles.forEach(mole => mole.addEventListener('click', bonk));
+
+// Removing 'bonked' class after mole peeps out
+moles.forEach(mole => mole.addEventListener('transitionend', function(e){
+    const bonkedClass = mole.classList.contains('bonked');
+    const propertyNameCheck = e.propertyName == 'top';
+
+    if ( bonkedClass && propertyNameCheck ) mole.classList.remove('bonked');
+}));
+
 bonusMole.addEventListener('click', bonusBonk);
 
 newPlayerForm.button.addEventListener('click', (e) => {
     playerName = document.querySelector('.playerName').value || 'Player One';
     startGame();
     e.preventDefault();
+});
+
+muteBtn.addEventListener('click', () => {
+    document.querySelectorAll('audio').forEach(audio => audio.muted = true);
 });
 
 document.body.addEventListener('click', comboCounter);

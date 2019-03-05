@@ -20,8 +20,8 @@
     }
 
     .bonked {
-        opacity: 0.3;
-        transform: rotate(180deg) scale(0.5);
+        opacity: 0;
+        transform: rotate(45deg) translateX(-50%) scale(0);
     }
 
     .mole:hover {
@@ -101,12 +101,16 @@
         background: url(img/splatter-1.png) no-repeat center;
         transition: opacity ease-out 0.3s;
         transform: translate(-50%, -50%);
-        z-index: 9999;
+        z-index: -1;
         pointer-events: none;
     }
 
     .blood.show {
         opacity: 1;
+    }
+
+    .blood.fadeOut {
+      opacity: 0.3;
     }
 
     .bulletHole {
@@ -487,28 +491,40 @@
       <div class="combo__bar"></div>
     </div><!-- end combo -->
   </div><!-- end combo__container -->
-  <div class="blood"></div>
+  <span class="muteBtn">Mute</span>
   <h1>Whack-a-mole! <span class="score">0</span></h1>
   <h2>Time left: <span class="timeLeft"></span></h2>
 
   <div class="game">
     <div class="hole hole1">
-      <div class="mole"></div>
+      <div class="mole mole--1"></div>
+      <div class="mole mole--2"></div>
+      <div class="mole mole--3"></div>
     </div>
     <div class="hole hole2">
-      <div class="mole"></div>
+      <div class="mole mole--1"></div>
+      <div class="mole mole--2"></div>
+      <div class="mole mole--3"></div>
     </div>
     <div class="hole hole3">
-      <div class="mole"></div>
+      <div class="mole mole--1"></div>
+      <div class="mole mole--2"></div>
+      <div class="mole mole--3"></div>
     </div>
     <div class="hole hole4">
-      <div class="mole"></div>
+      <div class="mole mole--1"></div>
+      <div class="mole mole--2"></div>
+      <div class="mole mole--3"></div>
     </div>
     <div class="hole hole5">
-      <div class="mole"></div>
+      <div class="mole mole--1"></div>
+      <div class="mole mole--2"></div>
+      <div class="mole mole--3"></div>
     </div>
     <div class="hole hole6">
-      <div class="mole"></div>
+      <div class="mole mole--1"></div>
+      <div class="mole mole--2"></div>
+      <div class="mole mole--3"></div>
     </div>
   </div>
   <img src="img/bonus-mole.png" class="bonusMole" />
