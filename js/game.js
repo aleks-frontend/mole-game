@@ -162,7 +162,9 @@ function peep() {
     const moleIndex = randomMole();
     const minTime = combo < 7 ? 500 : 400;
     const maxTime = combo < 7 ? 2000 : 1000;
-    const time = randomTime(minTime, maxTime);
+    let time = randomTime(minTime, maxTime);
+
+    if ( moleIndex == 3 ) time = 500;
 
     // hole.querySelector('.mole').classList.remove('bonked');
     hole.classList.add(`up-${moleIndex}`);
@@ -273,6 +275,8 @@ function comboCounter(e) {
     const bonusMoleCheck = e.target.classList.contains('bonusMole');
 
     if ( gameOn ) totalShots++;
+
+    if ( e.target.classList.contains('notAllowed') ) return; // This means that killCombo() was already called from bonk() function
     if ( moleCheck || bonusMoleCheck ) {
         combo++;
         totalHits++;
@@ -357,6 +361,7 @@ function bonk(e) {
         score -= 3;
         this.parentNode.classList.remove('up');
         scoreBoard.textContent = score;
+        killCombo();
         return;
     }
 
