@@ -100,7 +100,7 @@
         background: red;
         opacity: 0;
         background: url(img/splatter-1.png) no-repeat center;
-        transition: opacity ease-out 0.3s;
+        transition: opacity ease-out 0.8s;
         transform: translate(-50%, -50%);
         z-index: -1;
         pointer-events: none;
@@ -116,18 +116,32 @@
 
     .bulletHole {
       position: absolute;
-      width: 59px;
-      height: 73px;
-      background: url(img/bullet-hole-1.png) no-repeat center;
+      width: 55px;
+      height: 55px;
       transform: translate(-50%, -50%);
-      opacity: 0;
       transition: all ease-out 0.3s;
       z-index: -1;
       pointer-events: none;
     }
 
-    .bulletHole.show {
-      opacity: 1;
+    .bulletHole--1 {
+      background: url(img/bullet-hole-1.png) no-repeat center / 100%;
+    }
+
+    .bulletHole--2 {
+      background: url(img/bullet-hole-2.png) no-repeat center / 100%;
+    }
+
+    .bulletHole--3 {
+      background: url(img/bullet-hole-3.png) no-repeat center / 100%;
+    }
+
+    .bulletHole--4 {
+      background: url(img/bullet-hole-4.png) no-repeat center / 100%;
+    }
+
+    .bulletHole.fadeout {
+      opacity: 0;
     }
 
     .popup__overlay {

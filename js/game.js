@@ -160,7 +160,7 @@ function bonus() {
 function peep() {
     const hole = randomHole(holes);
     const moleIndex = randomMole();
-    const minTime = combo < 7 ? 500 : 400;
+    const minTime = combo < 7 ? 600 : 400;
     const maxTime = combo < 7 ? 2000 : 1000;
     let time = randomTime(minTime, maxTime);
 
@@ -236,7 +236,9 @@ function updateResults() {
 function startGame() {
     document.querySelectorAll('audio').forEach(audio => audio.pause());
     const bloodSplashes = document.querySelectorAll('.blood');
+    const bulletHoles = document.querySelectorAll('.bulletHole');
     if ( bloodSplashes.length > 0 ) bloodSplashes.forEach(blood => blood.remove());
+    if ( bulletHoles.length > 0 ) bulletHoles.forEach(bulletHole => bulletHole.remove());
     popupOverlay.classList.add('faded');
     scoreBoard.className = 'score';
     bonus();
@@ -271,10 +273,12 @@ function startGame() {
 }
 
 function comboCounter(e) {
+    console.log(e.target);
     const moleCheck = e.target.classList.contains('mole');
     const bonusMoleCheck = e.target.classList.contains('bonusMole');
 
     if ( gameOn ) totalShots++;
+
 
     if ( e.target.classList.contains('notAllowed') ) return; // This means that killCombo() was already called from bonk() function
     if ( moleCheck || bonusMoleCheck ) {
@@ -306,10 +310,11 @@ function addBulletHole(e) {
     };
 
     const bulletHole = document.createElement('div');
+    const bulletIndex = Math.floor(Math.random() * 4) + 1;
     bulletHole.classList.add('bulletHole');
+    bulletHole.classList.add(`bulletHole--${bulletIndex}`);
     document.body.prepend(bulletHole);
 
-    bulletHole.classList.add('show');
     bulletHole.style.left = clickPosition.left + 'px';
     bulletHole.style.top = clickPosition.top + 'px';
 
@@ -317,11 +322,9 @@ function addBulletHole(e) {
     ricochetSound.play();
 
     setTimeout(() => {
-        bulletHole.classList.remove('show');
-        setTimeout(() => {
-            bulletHole.remove();
-        }, 300);
-    }, 500);
+        bulletHole.classList.add('fadeout');
+        bulletHole.addEventListener('transitionend', () => bulletHole.remove());
+    }, 10000);
 }
 
 function bloodEffect(e) {
@@ -390,8 +393,7 @@ function bonusBonk(e) {
     scoreBoard.textContent = score;
     scoreBoard.classList.add('bonus');
     bloodSound.currentTime = 0;
-    clapSound.currentTime = 0;
-    clapSound.play();
+    bloodSound.play();
     bloodEffect(e);
 
     this.classList.add('bonked');
