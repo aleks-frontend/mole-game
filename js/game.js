@@ -121,14 +121,19 @@ function randomHole(holes) {
 }
 
 function randomMole() {
-    const moleIndex = Math.floor(Math.random() * 4) + 1;
+    const totalMoles = moles.length / holes.length;
+    const moleIndex = Math.floor(Math.random() * totalMoles) + 1;
 
     if ( lastMole === moleIndex ) {
         return randomMole();
     }
 
     lastMole = moleIndex;
-    return moleIndex;
+    const moleInfo = {
+        total: totalMoles,
+        index: moleIndex
+    };
+    return moleInfo;
 }
 
 function bonus() {
@@ -159,22 +164,22 @@ function bonus() {
 
 function peep() {
     const hole = randomHole(holes);
-    const moleIndex = randomMole();
-    const minTime = combo < 7 ? 600 : 400;
+    const moleInfo = randomMole();
+    const minTime = combo < 7 ? 800 : 600;
     const maxTime = combo < 7 ? 2000 : 1000;
     let time = randomTime(minTime, maxTime);
 
-    if ( moleIndex == 3 ) time = 500;
+    if ( moleInfo.index == moleInfo.total ) time = 600;
 
     // hole.querySelector('.mole').classList.remove('bonked');
-    hole.classList.add(`up-${moleIndex}`);
+    hole.classList.add(`up-${moleInfo.index}`);
     setTimeout(() => {
-        const bonkedCheck = !hole.querySelector(`.mole--${moleIndex}`).classList.contains('bonked');
-        const allowedCheck = !hole.querySelector(`.mole--${moleIndex}`).classList.contains('notAllowed');
+        const bonkedCheck = !hole.querySelector(`.mole--${moleInfo.index}`).classList.contains('bonked');
+        const allowedCheck = !hole.querySelector(`.mole--${moleInfo.index}`).classList.contains('notAllowed');
 
         if ( bonkedCheck && allowedCheck ) killCombo();
 
-        hole.classList.remove(`up-${moleIndex}`);
+        hole.classList.remove(`up-${moleInfo.index}`);
         if ( !timeUp ) {
             peep();
         }
@@ -273,7 +278,6 @@ function startGame() {
 }
 
 function comboCounter(e) {
-    console.log(e.target);
     const moleCheck = e.target.classList.contains('mole');
     const bonusMoleCheck = e.target.classList.contains('bonusMole');
 
