@@ -15,7 +15,7 @@ const comboSound = document.querySelector('.comboSound');
 const muteBtn = document.querySelector('.muteBtn');
 const comboBar = document.querySelector('.combo__bar');
 comboSound.loop = true;
-let gameDuration = 15000;
+let gameDuration = 10000;
 let score;
 let endMessage = '';
 let combo = 0;
@@ -169,15 +169,23 @@ function peep() {
     const maxTime = combo < 7 ? 2000 : 1000;
     let time = randomTime(minTime, maxTime);
 
+    if (timeUp) {
+        clearTimeout(peepTimeout);
+        return;
+    }
+
     if ( moleInfo.index == moleInfo.total ) time = 600;
 
-    // hole.querySelector('.mole').classList.remove('bonked');
-    hole.classList.add(`up-${moleInfo.index}`);
-    setTimeout(() => {
-        const bonkedCheck = !hole.querySelector(`.mole--${moleInfo.index}`).classList.contains('bonked');
-        const allowedCheck = !hole.querySelector(`.mole--${moleInfo.index}`).classList.contains('notAllowed');
+    hole.querySelector(`.mole--${moleInfo.index}`).classList.remove('dead');
 
-        if ( bonkedCheck && allowedCheck ) killCombo();
+    hole.classList.add(`up-${moleInfo.index}`);
+    const peepTimeout = setTimeout(() => {
+        setTimeout(() => {
+            const deadCheck = !hole.querySelector(`.mole--${moleInfo.index}`).classList.contains('dead');
+            const allowedCheck = !hole.querySelector(`.mole--${moleInfo.index}`).classList.contains('notAllowed');
+
+            if ( deadCheck && allowedCheck ) killCombo();
+        }, 300);
 
         hole.classList.remove(`up-${moleInfo.index}`);
         if ( !timeUp ) {
@@ -203,12 +211,12 @@ function updateResults() {
 
     const sorted = results.sort((a, b) => {
         if (a.result < b.result) return 1;
-        if (a.result > b.result) return -1;
+        if (a.result > b.result) return - 1;
 
         if ( a.precision < b.precision ) return 1;
-        if ( a.precision > b.precision ) return -1;
+        if ( a.precision > b.precision ) return - 1;
 
-        if ( a.player < b.player ) return -1;
+        if ( a.player < b.player ) return - 1;
         if ( a.player > b.player ) return 1;
     });
 
@@ -255,9 +263,11 @@ function startGame() {
     timeUp = false;
     score = 0;
     peep();
+    killCombo();
 
     gameTimer = new Timer(injectTime, function(time){
         timeUp = true;
+        gameOn = false;
         popupOverlay.classList.remove('hidden');
         table.classList.add('show');
         setTimeout(() => {
@@ -272,7 +282,6 @@ function startGame() {
         // Stopping the combo sound
         comboSound.pause();
         comboSound.currentTime = 0;
-        gameOn = false;
     }, gameDuration);
 
 }
@@ -281,7 +290,11 @@ function comboCounter(e) {
     const moleCheck = e.target.classList.contains('mole');
     const bonusMoleCheck = e.target.classList.contains('bonusMole');
 
-    if ( gameOn ) totalShots++;
+    if ( gameOn ) {
+        totalShots++;
+    } else {
+        return;
+    }
 
 
     if ( e.target.classList.contains('notAllowed') ) return; // This means that killCombo() was already called from bonk() function
@@ -357,7 +370,7 @@ function bonk(e) {
     if ( timeUp ) return;
     if ( !e.isTrusted ) return; // checking if it's a real click
 
-    this.classList.add('bonked');
+    this.classList.add('bonked', 'dead');
     clapSound.currentTime = 0;
     bloodSound.currentTime = 0;
     bloodSound.play();
@@ -417,7 +430,7 @@ bonusMole.addEventListener('click', bonusBonk);
 
 newPlayerForm.button.addEventListener('click', (e) => {
     playerName = document.querySelector('.playerName').value || 'Player One';
-    startGame();
+    if ( !gameOn ) startGame();
     e.preventDefault();
 });
 
