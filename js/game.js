@@ -15,7 +15,7 @@ const comboSound = document.querySelector('.comboSound');
 const muteBtn = document.querySelector('.muteBtn');
 const comboBar = document.querySelector('.combo__bar');
 comboSound.loop = true;
-let gameDuration = 10000;
+let gameDuration = 15000;
 let score;
 let endMessage = '';
 let combo = 0;
